@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RiRi studio — Radio Live Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0c0a;
+  --bg2: #151210;
+  --bg3: #1c1814;
+  --card: #1f1b16;
+  --card-hover: #2a2420;
+  --gold: #c9a96e;
+  --gold-light: #e8c98a;
+  --gold-dim: rgba(201,169,110,0.15);
+  --coral: #d4735a;
+  --teal: #4a9b8e;
+  --text: #f0ebe3;
+  --text-mid: #b8a898;
+  --text-dim: #7a6a5a;
+  --border: rgba(201,169,110,0.12);
+  --border-bright: rgba(201,169,110,0.3);
+  --red-live: #e05555;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ── NOISE TEXTURE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 180px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 40px;
+  background: rgba(14,12,10,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  text-decoration: none;
+}
+.nav-logo span { font-style: italic; font-weight: 300; }
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a {
+  color: var(--text-mid); text-decoration: none;
+  font-size: 0.8rem; letter-spacing: 0.15em;
+  text-transform: uppercase; transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-yt {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border: 1px solid var(--border-bright);
+  border-radius: 2px; color: var(--gold) !important;
+  font-size: 0.78rem !important;
+  transition: all 0.3s !important;
+}
+.nav-yt:hover { background: var(--gold-dim) !important; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  padding: 120px 40px 80px;
+  text-align: center;
+}
+
+/* 背景グラデーション */
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,169,110,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(74,155,142,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 20%, rgba(212,115,90,0.04) 0%, transparent 60%);
+}
+
+/* 音波アニメーション */
+.soundwave {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 120px; overflow: hidden; opacity: 0.15;
+}
+.soundwave svg { width: 100%; height: 100%; }
+.wave-line { animation: wave-anim 3s ease-in-out infinite; }
+.wave-line:nth-child(2) { animation-delay: 0.4s; opacity: 0.7; }
+.wave-line:nth-child(3) { animation-delay: 0.8s; opacity: 0.5; }
+@keyframes wave-anim {
+  0%,100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.4); }
+}
+
+.hero-eyebrow {
+  font-size: 0.72rem; letter-spacing: 0.35em;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 24px; position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 16px;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; width: 40px; height: 1px; background: var(--gold); opacity: 0.4;
+}
+
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  font-weight: 300; line-height: 1.05;
+  color: var(--text); position: relative; z-index: 1;
+  letter-spacing: -0.02em;
+}
+.hero-title em {
+  font-style: italic; color: var(--gold);
+  font-weight: 300;
+}
+
+.hero-sub {
+  margin-top: 20px; position: relative; z-index: 1;
+  font-size: 0.9rem; color: var(--text-mid);
+  letter-spacing: 0.08em; line-height: 1.8;
+}
+
+.hero-divider {
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 32px auto; position: relative; z-index: 1;
+}
+
+.hero-desc {
+  max-width: 480px; font-size: 0.9rem;
+  line-height: 1.9; color: var(--text-mid);
+  position: relative; z-index: 1;
+}
+
+.hero-actions {
+  display: flex; gap: 16px; margin-top: 40px;
+  position: relative; z-index: 1;
+  flex-wrap: wrap; justify-content: center;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 32px;
+  background: var(--gold);
+  color: var(--bg); font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.85rem; font-weight: 500; letter-spacing: 0.1em;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: all 0.3s; clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 32px;
+  background: transparent; color: var(--text-mid);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.85rem; letter-spacing: 0.1em;
+  text-decoration: none; border: 1px solid var(--border-bright);
+  transition: all 0.3s;
+}
+.btn-ghost:hover { color: var(--gold); border-color: var(--gold); }
+
+/* SNS Bar */
+.sns-bar {
+  display: flex; gap: 20px; margin-top: 48px;
+  position: relative; z-index: 1; align-items: center;
+  flex-wrap: wrap; justify-content: center;
+}
+.sns-bar a {
+  color: var(--text-dim); text-decoration: none;
+  font-size: 0.75rem; letter-spacing: 0.15em;
+  text-transform: uppercase; transition: color 0.3s;
+  display: flex; align-items: center; gap: 6px;
+}
+.sns-bar a:hover { color: var(--gold); }
+.sns-sep { color: var(--text-dim); font-size: 0.6rem; }
+
+/* scroll indicator */
+.scroll-ind {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--text-dim); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+}
+.scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: scroll-drop 2s ease-in-out infinite;
+}
+@keyframes scroll-drop {
+  0%,100% { transform: scaleY(0); transform-origin: top; opacity: 1; }
+  50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  99% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
+}
+
+/* ── ARCHIVE SECTION ── */
+.archive {
+  position: relative; z-index: 1;
+  padding: 100px 40px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+}
+.archive-inner { max-width: 1200px; margin: 0 auto; }
+
+.sec-header {
+  display: flex; align-items: flex-end;
+  justify-content: space-between; gap: 20px;
+  margin-bottom: 56px; flex-wrap: wrap;
+}
+.sec-label {
+  font-size: 0.68rem; letter-spacing: 0.3em;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.sec-label::before {
+  content: ''; width: 24px; height: 1px; background: var(--gold);
+}
+.sec-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 300; color: var(--text); line-height: 1.2;
+}
+.sec-title em { font-style: italic; color: var(--gold); }
+.sec-count {
+  font-size: 0.8rem; color: var(--text-dim);
+  letter-spacing: 0.08em; white-space: nowrap;
+  padding-bottom: 4px;
+}
+
+/* LOADING / ERROR */
+.status-wrap {
+  text-align: center; padding: 80px 20px; color: var(--text-dim);
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 2px solid var(--border); border-top-color: var(--gold);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.status-wrap p { font-size: 0.85rem; letter-spacing: 0.1em; }
+
+.error-box {
+  border: 1px solid rgba(212,115,90,0.3);
+  background: rgba(212,115,90,0.05);
+  border-radius: 4px; padding: 40px;
+  text-align: center; color: var(--coral);
+  font-size: 0.88rem; line-height: 1.8;
+}
+.error-box a { color: var(--gold); text-decoration: none; }
+
+/* VIDEO GRID */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2px;
+}
+
+.video-card {
+  display: block; text-decoration: none; color: inherit;
+  background: var(--card);
+  position: relative; overflow: hidden;
+  transition: background 0.3s;
+  border: 1px solid var(--border);
+}
+.video-card:hover { background: var(--card-hover); }
+.video-card:hover .card-overlay { opacity: 1; }
+.video-card:hover .thumb-img { transform: scale(1.04); }
+
+.thumb-wrap {
+  position: relative; overflow: hidden;
+  aspect-ratio: 16/9; background: var(--bg3);
+}
+.thumb-img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; transition: transform 0.5s ease;
+}
+.thumb-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; color: var(--text-dim);
+  background: linear-gradient(135deg, var(--bg3), var(--bg2));
+}
+
+/* ライブ中バッジ */
+.badge-live {
+  position: absolute; top: 10px; left: 10px;
+  background: var(--red-live); color: #fff;
+  font-size: 0.65rem; font-weight: 500; letter-spacing: 0.12em;
+  padding: 3px 10px;
+  display: flex; align-items: center; gap: 5px;
+}
+.badge-live::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: #fff; animation: blink 1s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.card-overlay {
+  position: absolute; inset: 0;
+  background: rgba(201,169,110,0.08);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.3s;
+}
+.play-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(201,169,110,0.9);
+  display: flex; align-items: center; justify-content: center;
+}
+.play-icon svg { width: 20px; height: 20px; fill: var(--bg); margin-left: 3px; }
+
+.card-body { padding: 18px 20px 20px; }
+.card-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.card-type {
+  font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold); border: 1px solid rgba(201,169,110,0.25);
+  padding: 2px 8px;
+}
+.card-date { font-size: 0.72rem; color: var(--text-dim); }
+.card-title {
+  font-size: 0.88rem; font-weight: 400; color: var(--text);
+  line-height: 1.55;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-arrow {
+  margin-top: 14px; font-size: 0.72rem; color: var(--text-dim);
+  letter-spacing: 0.1em; display: flex; align-items: center; gap: 6px;
+  transition: color 0.3s;
+}
+.video-card:hover .card-arrow { color: var(--gold); }
+
+/* LOAD MORE */
+.load-more-wrap { text-align: center; margin-top: 56px; }
+.btn-load-more {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 40px; border: 1px solid var(--border-bright);
+  background: transparent; color: var(--text-mid);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.82rem; letter-spacing: 0.15em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.3s;
+}
+.btn-load-more:hover { border-color: var(--gold); color: var(--gold); }
+.btn-load-more:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── CTA ── */
+.cta-section {
+  position: relative; z-index: 1;
+  padding: 100px 40px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  overflow: hidden;
+}
+.cta-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(201,169,110,0.04) 0%, transparent 70%);
+}
+.cta-inner { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; }
+.cta-icon {
+  width: 64px; height: 64px; margin: 0 auto 32px;
+  border: 1px solid var(--border-bright); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.cta-icon svg { width: 28px; height: 28px; fill: var(--gold); }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 48px 40px 32px;
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 24px;
+}
+.footer-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem; font-weight: 600; color: var(--gold);
+  letter-spacing: 0.05em;
+}
+.footer-logo span { font-style: italic; font-weight: 300; }
+.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+.footer-links a {
+  color: var(--text-dim); text-decoration: none;
+  font-size: 0.78rem; letter-spacing: 0.12em;
+  text-transform: uppercase; transition: color 0.3s;
+}
+.footer-links a:hover { color: var(--gold); }
+.footer-copy {
+  width: 100%; text-align: center;
+  margin-top: 32px; padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.1em;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 16px 20px; }
+  .nav-links { gap: 16px; }
+  .nav-links a:not(.nav-yt) { display: none; }
+  .hero { padding: 100px 24px 80px; }
+  .archive { padding: 72px 20px; }
+  .sec-header { margin-bottom: 36px; }
+  .video-grid { grid-template-columns: 1fr; gap: 1px; }
+  .cta-section { padding: 72px 24px; }
+  footer { padding: 40px 20px 24px; }
+  .footer-inner { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">RiRi <span>studio</span></a>
+  <div class="nav-links">
+    <a href="#archive">Archive</a>
+    <a href="https://youtube.com/@riri8bgm" target="_blank" class="nav-yt">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.05 0 12 0 12s0 3.95.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.95 24 12 24 12s0-3.95-.5-5.81zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>
+      YouTube
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="soundwave">
+    <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+      <path class="wave-line" d="M0,60 Q150,20 300,60 T600,60 T900,60 T1200,60" stroke="#c9a96e" stroke-width="1" fill="none"/>
+      <path class="wave-line" d="M0,60 Q150,90 300,60 T600,60 T900,60 T1200,60" stroke="#c9a96e" stroke-width="0.5" fill="none"/>
+      <path class="wave-line" d="M0,60 Q100,30 200,60 Q300,90 400,60 T700,60 T1000,60 T1200,60" stroke="#c9a96e" stroke-width="0.5" fill="none"/>
+    </svg>
+  </div>
+
+  <p class="hero-eyebrow">Radio Live Archive</p>
+  <h1 class="hero-title">RiRi <em>studio</em></h1>
+  <p class="hero-sub">作業用BGM &amp; ラジオライブ</p>
+  <div class="hero-divider"></div>
+  <p class="hero-desc">
+    心地よい音楽とゆるやかなトークで、<br>
+    あなたの毎日に小さなやすらぎを届ける。<br>
+    ラジオライブのアーカイブはここから。
+  </p>
+  <div class="hero-actions">
+    <a href="#archive" class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      アーカイブを見る
+    </a>
+    <a href="https://youtube.com/@riri8bgm" target="_blank" class="btn-ghost">チャンネルへ →</a>
+  </div>
+  <div class="sns-bar">
+    <a href="https://youtube.com/@riri8bgm" target="_blank">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.05 0 12 0 12s0 3.95.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.95 24 12 24 12s0-3.95-.5-5.81zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>
+      YouTube
+    </a>
+    <span class="sns-sep">·</span>
+    <a href="https://x.com/riri8bgm" target="_blank">𝕏 Twitter</a>
+    <span class="sns-sep">·</span>
+    <a href="https://instagram.com/riri8bgm" target="_blank">📷 Instagram</a>
+  </div>
+  <div class="scroll-ind">
+    <div class="scroll-line"></div>
+    <span>scroll</span>
+  </div>
+</section>
+
+<!-- ARCHIVE -->
+<section class="archive" id="archive">
+  <div class="archive-inner">
+    <div class="sec-header">
+      <div>
+        <p class="sec-label">Radio Live</p>
+        <h2 class="sec-title">ライブ配信<em>アーカイブ</em></h2>
+      </div>
+      <p class="sec-count" id="video-count"></p>
+    </div>
+
+    <div id="video-container">
+      <div class="status-wrap">
+        <div class="spinner"></div>
+        <p>ライブアーカイブを読み込み中...</p>
+      </div>
+    </div>
+
+    <div class="load-more-wrap">
+      <button id="load-more-btn" class="btn-load-more" style="display:none" onclick="loadMore()">
+        <span>More Archives</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-inner">
+    <div class="cta-icon">
+      <svg viewBox="0 0 24 24"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.05 0 12 0 12s0 3.95.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.95 24 12 24 12s0-3.95-.5-5.81zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>
+    </div>
+    <p class="sec-label" style="justify-content:center">Subscribe</p>
+    <h2 class="sec-title" style="margin-bottom:16px">チャンネル<em>登録</em>はこちら</h2>
+    <p style="color:var(--text-mid);font-size:0.88rem;line-height:1.9;margin-bottom:32px">
+      最新のラジオライブ・BGMはYouTubeで配信中。<br>
+      チャンネル登録で見逃しなし🔔
+    </p>
+    <a href="https://youtube.com/@riri8bgm" target="_blank" class="btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.05 0 12 0 12s0 3.95.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.95 24 12 24 12s0-3.95-.5-5.81zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>
+      YouTubeで視聴する
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">RiRi <span>studio</span></div>
+    <div class="footer-links">
+      <a href="https://youtube.com/@riri8bgm" target="_blank">YouTube</a>
+      <a href="https://x.com/riri8bgm" target="_blank">Twitter / X</a>
+      <a href="https://instagram.com/riri8bgm" target="_blank">Instagram</a>
+    </div>
+  </div>
+  <p class="footer-copy">© 2025 RiRi studio. All rights reserved.</p>
+</footer>
+
+<script>
+const API_KEY    = 'AIzaSyClHiAHecUQCbHM3-CoZt26sQalMsGaBwQ';
+const HANDLE     = 'riri8bgm';
+const MAX        = 12;
+
+let channelId    = '';
+let allVideos    = [];
+let nextToken    = '';
+let totalLoaded  = 0;
+
+// ── チャンネルID取得 ──
+async function getChannelId() {
+  const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${HANDLE}&key=${API_KEY}`);
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  if (d.items?.length) return d.items[0].id;
+  throw new Error('チャンネルが見つかりませんでした');
+}
+
+// ── ライブ配信・アーカイブのみ取得 ──
+// eventType=completed → 終了したライブ配信（アーカイブ）
+// eventType=live      → 現在ライブ中
+async function fetchLiveVideos(pageToken = '', eventType = 'completed') {
+  const pt = pageToken ? `&pageToken=${pageToken}` : '';
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&maxResults=${MAX}&order=date&type=video&eventType=${eventType}${pt}&key=${API_KEY}`;
+  const r = await fetch(url);
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return d;
+}
+
+// ── 現在ライブ中も取得 ──
+async function fetchCurrentLive() {
+  try {
+    const d = await fetchLiveVideos('', 'live');
+    return d.items || [];
+  } catch { return []; }
+}
+
+function formatDate(s) {
+  const d = new Date(s);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function parseItem(item, isLive = false) {
+  return {
+    videoId:     item.id.videoId,
+    title:       item.snippet.title,
+    publishedAt: item.snippet.publishedAt,
+    thumbnails:  item.snippet.thumbnails,
+    isLive
+  };
+}
+
+function createCard(v) {
+  const thumb = v.thumbnails?.medium?.url || v.thumbnails?.default?.url || '';
+  const type  = v.isLive ? 'LIVE NOW' : 'ARCHIVE';
+  return `
+    <a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank" class="video-card">
+      <div class="thumb-wrap">
+        ${thumb
+          ? `<img class="thumb-img" src="${thumb}" alt="${v.title}" loading="lazy">`
+          : `<div class="thumb-placeholder">📻</div>`}
+        ${v.isLive ? `<div class="badge-live">LIVE</div>` : ''}
+        <div class="card-overlay">
+          <div class="play-icon">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-type">${type}</span>
+          <span class="card-date">${formatDate(v.publishedAt)}</span>
+        </div>
+        <div class="card-title">${v.title}</div>
+        <div class="card-arrow">視聴する →</div>
+      </div>
+    </a>`;
+}
+
+function renderGrid() {
+  const container = document.getElementById('video-container');
+  if (!allVideos.length) {
+    container.innerHTML = `<div class="error-box">ライブアーカイブが見つかりませんでした。<br><a href="https://youtube.com/@riri8bgm" target="_blank">YouTubeで直接確認する →</a></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="video-grid">${allVideos.map(createCard).join('')}</div>`;
+  document.getElementById('video-count').textContent = `${allVideos.length} archives`;
+}
+
+async function loadMore() {
+  if (!nextToken) return;
+  const btn = document.getElementById('load-more-btn');
+  btn.disabled = true; btn.querySelector('span').textContent = 'Loading...';
+  try {
+    const d = await fetchLiveVideos(nextToken);
+    const more = (d.items || []).map(i => parseItem(i));
+    allVideos = [...allVideos, ...more];
+    nextToken = d.nextPageToken || '';
+    renderGrid();
+    btn.style.display = nextToken ? 'flex' : 'none';
+  } catch(e) {
+    alert(e.message);
+  } finally {
+    btn.disabled = false; btn.querySelector('span').textContent = 'More Archives';
+  }
+}
+
+async function init() {
+  const container = document.getElementById('video-container');
+  try {
+    channelId = await getChannelId();
+
+    // 並列取得: ライブ中 + アーカイブ
+    const [liveItems, archiveData] = await Promise.all([
+      fetchCurrentLive(),
+      fetchLiveVideos()
+    ]);
+
+    const liveVids    = liveItems.map(i => parseItem(i, true));
+    const archiveVids = (archiveData.items || []).map(i => parseItem(i));
+
+    allVideos = [...liveVids, ...archiveVids];
+    nextToken = archiveData.nextPageToken || '';
+
+    renderGrid();
+    const btn = document.getElementById('load-more-btn');
+    btn.style.display = nextToken ? 'flex' : 'none';
+
+  } catch(e) {
+    container.innerHTML = `
+      <div class="error-box">
+        ⚠️ 動画の取得に失敗しました<br>
+        <small style="font-size:0.8rem;opacity:0.7">${e.message}</small><br><br>
+        <a href="https://youtube.com/@riri8bgm" target="_blank">YouTubeで直接見る →</a>
+      </div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
