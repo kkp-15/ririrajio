@@ -553,14 +553,43 @@ footer {
 </footer>
 
 <script>
-const API_KEY = 'AIzaSyClHiAHecUQCbHM3-CoZt26sQalMsGaBwQ';
-const HANDLE  = 'riri8bgm';
-const MAX     = 12;
+const API_KEY    = 'AIzaSyClHiAHecUQCbHM3-CoZt26sQalMsGaBwQ';
+const HANDLE     = 'riri8bgm';
+const MAX        = 12;
+const CACHE_KEY  = 'riri_cache';
+const CACHE_TTL  = 60 * 60 * 1000; // 1時間（ミリ秒）
 
 let channelId = '';
 let allVideos = [];
 let nextToken = '';
 
+// ── キャッシュ読み書き ──
+function saveCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      ts: Date.now(),
+      channelId: data.channelId,
+      videos: data.videos,
+      nextToken: data.nextToken
+    }));
+  } catch(e) { /* ストレージ満杯等は無視 */ }
+}
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cache = JSON.parse(raw);
+    // TTL切れチェック
+    if (Date.now() - cache.ts > CACHE_TTL) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return cache;
+  } catch(e) { return null; }
+}
+
+// ── API ──
 async function getChannelId() {
   const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${HANDLE}&key=${API_KEY}`);
   const d = await r.json();
@@ -587,6 +616,7 @@ async function fetchCurrentLive() {
   } catch { return []; }
 }
 
+// ── データ変換 ──
 function formatDate(s) {
   const d = new Date(s);
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
@@ -602,6 +632,7 @@ function parseItem(item, isLive=false) {
   };
 }
 
+// ── カード生成 ──
 function createCard(v) {
   const thumb = v.thumbnails?.medium?.url || v.thumbnails?.default?.url || '';
   return `
@@ -626,6 +657,7 @@ function createCard(v) {
     </a>`;
 }
 
+// ── 描画 ──
 function render() {
   const c = document.getElementById('video-container');
   if (!allVideos.length) {
@@ -636,32 +668,58 @@ function render() {
   document.getElementById('video-count').textContent = `${allVideos.length} archives`;
 }
 
+// ── もっと見る（キャッシュ対象外：追加読み込みはAPIで取得） ──
 async function loadMore() {
   if (!nextToken) return;
   const btn = document.getElementById('load-more-btn');
   btn.disabled = true; btn.textContent = '読み込み中…';
   try {
     const d = await fetchArchive(nextToken);
-    allVideos = [...allVideos, ...(d.items||[]).map(i => parseItem(i))];
+    const more = (d.items||[]).map(i => parseItem(i));
+    allVideos = [...allVideos, ...more];
     nextToken = d.nextPageToken || '';
+    // キャッシュも更新
+    saveCache({ channelId, videos: allVideos, nextToken });
     render();
     btn.style.display = nextToken ? 'inline-flex' : 'none';
   } catch(e) { alert(e.message); }
   finally { btn.disabled=false; btn.textContent='もっと見る ↓'; }
 }
 
+// ── 初期化 ──
 async function init() {
   const c = document.getElementById('video-container');
   try {
+    // ① キャッシュ確認
+    const cache = loadCache();
+    if (cache) {
+      // キャッシュヒット → APIを叩かずにそのまま表示
+      channelId = cache.channelId;
+      allVideos = cache.videos;
+      nextToken = cache.nextToken;
+      render();
+      document.getElementById('load-more-btn').style.display = nextToken ? 'inline-flex' : 'none';
+      return; // ここで終了（APIコールなし）
+    }
+
+    // ② キャッシュなし → APIから取得
     channelId = await getChannelId();
-    const [liveItems, archiveData] = await Promise.all([fetchCurrentLive(), fetchArchive()]);
+    const [liveItems, archiveData] = await Promise.all([
+      fetchCurrentLive(),
+      fetchArchive()
+    ]);
     allVideos = [
       ...liveItems.map(i => parseItem(i, true)),
       ...(archiveData.items||[]).map(i => parseItem(i))
     ];
     nextToken = archiveData.nextPageToken || '';
+
+    // ③ キャッシュに保存
+    saveCache({ channelId, videos: allVideos, nextToken });
+
     render();
     document.getElementById('load-more-btn').style.display = nextToken ? 'inline-flex' : 'none';
+
   } catch(e) {
     c.innerHTML = `<div class="error-box">⚠️ 動画の取得に失敗しました<br><small>${e.message}</small><br><br><a href="https://youtube.com/@riri8bgm" target="_blank">YouTubeで直接見る →</a></div>`;
   }
