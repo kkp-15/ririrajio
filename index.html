@@ -549,7 +549,7 @@ footer {
       <a href="https://instagram.com/riri8bgm" target="_blank">Instagram</a>
     </div>
   </div>
-  <p class="footer-copy">© 2025 RiRi studio. All rights reserved.</p>
+  <p class="footer-copy">© <script>document.write(new Date().getFullYear())</script> RiRi studio. All rights reserved.</p>
 </footer>
 
 <script>
@@ -616,6 +616,13 @@ async function fetchCurrentLive() {
   } catch { return []; }
 }
 
+// ── HTMLエスケープ ──
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
 // ── データ変換 ──
 function formatDate(s) {
   const d = new Date(s);
@@ -635,11 +642,13 @@ function parseItem(item, isLive=false) {
 // ── カード生成 ──
 function createCard(v) {
   const thumb = v.thumbnails?.medium?.url || v.thumbnails?.default?.url || '';
+  const safeTitle = escapeHtml(v.title);
+  const safeId = encodeURIComponent(v.videoId);
   return `
-    <a href="https://www.youtube.com/watch?v=${v.videoId}" target="_blank" class="video-card">
+    <a href="https://www.youtube.com/watch?v=${safeId}" target="_blank" class="video-card">
       <div class="thumb-wrap">
         ${thumb
-          ? `<img class="thumb-img" src="${thumb}" alt="${v.title}" loading="lazy">`
+          ? `<img class="thumb-img" src="${thumb}" alt="${safeTitle}" loading="lazy">`
           : `<div class="thumb-empty">📻</div>`}
         ${v.isLive ? `<div class="live-badge"><span class="live-dot"></span>LIVE</div>` : ''}
         <div class="play-btn">
@@ -651,7 +660,7 @@ function createCard(v) {
           <span class="card-tag">${v.isLive ? '🔴 LIVE' : '📻 アーカイブ'}</span>
           <span class="card-date">${formatDate(v.publishedAt)}</span>
         </div>
-        <div class="card-title">${v.title}</div>
+        <div class="card-title">${safeTitle}</div>
         <div class="card-link">視聴する <span>→</span></div>
       </div>
     </a>`;
